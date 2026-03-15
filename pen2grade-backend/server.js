@@ -1,0 +1,34 @@
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const path = require('path');
+require('dotenv').config();
+
+// Route imports
+const authRoutes = require('./routes/authRoutes');
+const rubricRoutes = require('./routes/rubricRoutes');
+const essayRoutes = require('./routes/essayRoutes');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB Atlas'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Mount Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/rubrics', rubricRoutes);
+app.use('/api/essays', essayRoutes);
+
+app.get('/', (req, res) => {
+  res.send('Backend API is running');
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: 
+      context: ./pen2grade-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./pen2grade-frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./pen2grade-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./pen2grade-backend:/app
+      - /app/node_modules
+    env_file:
+      - ./pen2grade-backend/.env
+    environment:
+      - PORT=3000
+      - AI_SERVICE_URL=http://ai-service:8000
+    depends_on:
+      - ai-service
+
+  ai-service:
+    build:
+      context: ./pen2grade-ai
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./pen2grade-ai:/app
+    environment:
+      - GEMINI_API_KEY=AIzaSyBqWHR_rhW38fxbdGZt658NQDMc_S6Kyj0
+      - PYTHONUNBUFFERED=1

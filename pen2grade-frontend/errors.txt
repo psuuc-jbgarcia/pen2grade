@@ -1,0 +1,6 @@
+src/pages/DashboardPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/DashboardPage.tsx(8,42): error TS6133: 'UserIcon' is declared but its value is never read.
+src/pages/DashboardPage.tsx(9,19): error TS6133: 'MoreVertical' is declared but its value is never read.
+src/pages/DashboardPage.tsx(29,9): error TS6133: 'navigate' is declared but its value is never read.
+src/pages/EssayResultPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/EssayResultPage.tsx(5,27): error TS6133: 'Clock' is declared but its value is never read.
