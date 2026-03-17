@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { 
   FileText, ArrowLeft, Loader2, 
-  ChevronRight, Search, Filter,
+  ChevronRight, Filter,
   CheckCircle, Clock, AlertCircle
 } from 'lucide-react';
 
@@ -73,12 +73,11 @@ export default function AllEssaysPage() {
           
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
               <input 
                 placeholder="Search students or rubrics..." 
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="input-field pl-10 py-2.5 text-sm w-full" 
+                className="input-field pl-4 py-2.5 text-sm w-full" 
               />
             </div>
           </div>

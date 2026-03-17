@@ -6,8 +6,9 @@ import {
   BookOpen, FileText, List, LogOut, Plus, 
   CheckCircle, Clock, AlertCircle, Loader2, 
   ChevronRight, LayoutDashboard,
-  Search, Filter, Edit, Trash2, AlertTriangle
+  Filter, Edit, Trash2, AlertTriangle
 } from 'lucide-react';
+import InstallPWA from '../components/InstallPWA';
 
 interface Essay { 
   _id: string; 
@@ -127,15 +128,15 @@ export default function DashboardPage() {
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <header className="hidden md:flex items-center justify-between px-10 py-6 shrink-0">
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Overview</h1>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-              <input placeholder="Search essays..." className="bg-white/5 border border-white/5 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-indigo-500/50 w-64 transition-all" />
+            <div className="flex items-center gap-4">
+              <InstallPWA />
+              <div className="relative">
+                <input placeholder="Search essays..." className="bg-white/5 border border-white/5 rounded-full py-2 pl-4 pr-4 text-sm focus:outline-none focus:border-indigo-500/50 w-64 transition-all" />
+              </div>
+              <Link to="/essays/upload" className="btn-primary py-2.5">
+                <Plus size={18} /> Upload Essay
+              </Link>
             </div>
-            <Link to="/essays/upload" className="btn-primary py-2.5">
-              <Plus size={18} /> Upload Essay
-            </Link>
-          </div>
         </header>
 
         <section className="flex-1 overflow-y-auto px-6 md:px-10 pb-10 space-y-10 pt-6 md:pt-0 custom-scrollbar">

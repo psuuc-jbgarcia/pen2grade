@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { 
   List, Plus, Edit, Trash2, ArrowLeft, 
-  Loader2, AlertTriangle, FileText, Search
+  Loader2, AlertTriangle, FileText
 } from 'lucide-react';
 
 interface Rubric { 
@@ -65,12 +65,11 @@ export default function RubricsPage() {
           
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
               <input 
                 placeholder="Search rubrics..." 
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="input-field pl-10 py-2.5 text-sm w-full" 
+                className="input-field pl-4 py-2.5 text-sm w-full" 
               />
             </div>
             <Link to="/rubrics/new" className="btn-primary py-2.5 w-full sm:w-auto">
