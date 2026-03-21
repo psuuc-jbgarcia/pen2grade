@@ -81,3 +81,33 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Server error during login' });
   }
 };
+
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    const today = new Date().toDateString();
+    let count = user.aiCheckCount || 0;
+    if (!user.lastAiCheckDate || user.lastAiCheckDate.toDateString() !== today) {
+      count = 0;
+    }
+    
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      },
+      usage: {
+        count: count,
+        limit: 10,
+        remaining: Math.max(0, 10 - count)
+      }
+    });
+  } catch (error) {
+    console.error('Fetch me error:', error);
+    res.status(500).json({ message: 'Server error fetching user details' });
+  }
+};

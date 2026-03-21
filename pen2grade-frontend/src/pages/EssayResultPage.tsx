@@ -4,7 +4,7 @@ import api from '../api/axios';
 import { 
   ArrowLeft, CheckCircle, AlertCircle, Loader2, 
   FileText, Sparkles, Target, BarChart3, MessageSquare, 
-  History, Download, Share2
+  History, Download, Share2, ShieldAlert, FileSearch, Clock
 } from 'lucide-react';
 
 interface Essay {
@@ -86,10 +86,16 @@ export default function EssayResultPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
-             <button className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 text-gray-300 text-xs font-bold hover:bg-white/10 transition-all border border-white/5">
+             <button 
+                onClick={() => alert('Export PDF feature is currently under development.')}
+                className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 text-gray-300 text-xs font-bold hover:bg-white/10 transition-all border border-white/5"
+             >
                 <Download size={14} /> Export PDF
              </button>
-             <button className="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white transition-colors border border-white/5">
+             <button 
+                onClick={() => alert('Share feature is currently under development.')}
+                className="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white transition-colors border border-white/5"
+             >
                 <Share2 size={16} />
              </button>
           </div>
@@ -108,9 +114,9 @@ export default function EssayResultPage() {
              </div>
              
              <div className="flex flex-col md:flex-row items-center gap-8 p-8 relative z-10">
-                <div className="relative w-40 h-40 flex items-center justify-center">
+                <div className="relative w-40 h-40 shrink-0 flex items-center justify-center">
                    {/* Circular Score Bar */}
-                   <svg className="w-full h-full -rotate-90">
+                   <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
                       <circle cx="80" cy="80" r="72" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
                       <circle 
                         cx="80" cy="80" r="72" fill="none" stroke="url(#scoreGradient)" strokeWidth="12" 
@@ -162,6 +168,39 @@ export default function EssayResultPage() {
                         </div>
                       )}
                    </div>
+                </div>
+             </div>
+          </div>
+
+          {/* AI Content & Plagiarism placeholders */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 fade-in">
+             <div className="glass-card p-5 border-blue-500/20 bg-blue-500/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10"><ShieldAlert size={60} /></div>
+                <h3 className="text-xs font-black text-blue-400 uppercase tracking-widest flex items-center gap-2 mb-2">
+                   <ShieldAlert size={14} /> AI Content
+                </h3>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-blue-500/60 blur-[1px]">
+                     Probability: 0%
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-gray-500 mt-2">
+                     <Clock size={12} className="text-gray-600" /> UNDER DEVELOPMENT
+                  </div>
+                </div>
+             </div>
+             
+             <div className="glass-card p-5 border-amber-500/20 bg-amber-500/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10"><FileSearch size={60} /></div>
+                <h3 className="text-xs font-black text-amber-400 uppercase tracking-widest flex items-center gap-2 mb-2">
+                   <FileSearch size={14} /> Plagiarism
+                </h3>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500/60 blur-[1px]">
+                     Matches Found: 0
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-gray-500 mt-2">
+                     <Clock size={12} className="text-gray-600" /> UNDER DEVELOPMENT
+                  </div>
                 </div>
              </div>
           </div>

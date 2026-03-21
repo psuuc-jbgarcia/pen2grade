@@ -17,9 +17,13 @@ export default function UploadEssayPage() {
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [remainingUses, setRemainingUses] = useState<number | null>(null);
 
   useEffect(() => {
     api.get('/rubrics').then(res => setRubrics(res.data));
+    api.get('/auth/me').then(res => {
+      if (res.data?.usage?.remaining !== undefined) setRemainingUses(res.data.usage.remaining);
+    }).catch(() => { });
   }, []);
 
   const handleFile = (f: File) => {
@@ -48,9 +52,9 @@ export default function UploadEssayPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     let submissionFile = file;
-    
+
     if (uploadMode === 'text') {
       if (!pastedText.trim()) { setError('Please paste some text to evaluate.'); return; }
       // Create a virtual file from pasted text
@@ -59,12 +63,12 @@ export default function UploadEssayPage() {
     } else {
       if (!submissionFile) { setError('Please provide the essay file.'); return; }
     }
-    
+
     if (!rubricId) { setError('A rubric must be selected for evaluation.'); return; }
     if (!submissionFile) { setError('Please provide an essay document or text.'); return; }
-    
+
     setLoading(true); setError('');
-    
+
     try {
       const formData = new FormData();
       formData.append('document', submissionFile);
@@ -105,10 +109,10 @@ export default function UploadEssayPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Student Identity</label>
-                <input 
-                  required value={studentName} onChange={e => setStudentName(e.target.value)} 
-                  placeholder="e.g., Maria Santos" 
-                  className="input-field py-4 font-bold" 
+                <input
+                  required value={studentName} onChange={e => setStudentName(e.target.value)}
+                  placeholder="e.g., Maria Santos"
+                  className="input-field py-4 font-bold"
                 />
               </div>
               <div className="space-y-2">
@@ -125,18 +129,16 @@ export default function UploadEssayPage() {
               <button
                 type="button"
                 onClick={() => setUploadMode('file')}
-                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                  uploadMode === 'file' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'
-                }`}
+                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${uploadMode === 'file' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'
+                  }`}
               >
                 <Upload size={18} /> Upload File
               </button>
               <button
                 type="button"
                 onClick={() => setUploadMode('text')}
-                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                  uploadMode === 'text' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'
-                }`}
+                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${uploadMode === 'text' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'
+                  }`}
               >
                 <FileText size={18} /> Paste Text
               </button>
@@ -146,9 +148,8 @@ export default function UploadEssayPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Document Upload</label>
                 <div
-                  className={`relative rounded-3xl p-12 text-center transition-all cursor-pointer border-2 border-dashed group ${
-                    dragOver ? 'border-indigo-500 bg-indigo-500/10 scale-[0.99]' : 'border-white/10 bg-black/20 hover:border-white/20'
-                  }`}
+                  className={`relative rounded-3xl p-12 text-center transition-all cursor-pointer border-2 border-dashed group ${dragOver ? 'border-indigo-500 bg-indigo-500/10 scale-[0.99]' : 'border-white/10 bg-black/20 hover:border-white/20'
+                    }`}
                   onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                   onDragLeave={() => setDragOver(false)}
                   onDrop={onDrop}
@@ -188,8 +189,8 @@ export default function UploadEssayPage() {
             )}
 
             <div className="pt-4">
-              <button 
-                type="submit" disabled={loading || (uploadMode === 'file' ? !file : !pastedText.trim())} 
+              <button
+                type="submit" disabled={loading || (uploadMode === 'file' ? !file : !pastedText.trim())}
                 className={`btn-primary w-full justify-center py-5 text-lg group ${((uploadMode === 'file' ? !file : !pastedText.trim()) || loading) ? 'grayscale opacity-50 cursor-not-allowed' : ''}`}
               >
                 <div className="flex items-center gap-3">
@@ -199,7 +200,13 @@ export default function UploadEssayPage() {
                   </span>
                 </div>
               </button>
-              <p className="text-center mt-6 text-[10px] text-gray-600 uppercase tracking-[0.2em] font-black">Powered by Google Gemini 2.5 Flash</p>
+              <div className="text-center mt-6 space-y-1">
+                <p className="text-[12px] text-gray-400 font-bold tracking-wide">
+                  {remainingUses !== null ? `Free Version: You have ${remainingUses} uses left today.` : 'Free Version: 10 uses per day.'}
+                </p>
+                <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em] font-black pt-2">Powered by Google Gemini 2.5 Flash</p>
+                <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em] font-black pb-4 text-indigo-400">Developed by Jerico B. Garcia</p>
+              </div>
             </div>
           </form>
         </div>

@@ -18,7 +18,8 @@ export default function RegisterPage() {
       await api.post('/auth/register', form);
       navigate('/login');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Try a different email.');
+      console.error('Registration submit error:', err);
+      setError(err.response?.data?.message || err.message || 'Registration failed. Please check network connection.');
     } finally {
       setLoading(false);
     }

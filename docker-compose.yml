@@ -12,6 +12,7 @@ services:
       - /app/node_modules
     environment:
       - VITE_API_URL=http://localhost:3000/api
+      - BACKEND_URL=http://backend:3000
     depends_on:
       - backend
 
@@ -40,6 +41,7 @@ services:
       - "8000:8000"
     volumes:
       - ./pen2grade-ai:/app
+    env_file:
+      - ./pen2grade-ai/.env
     environment:
-      - GEMINI_API_KEY=AIzaSyBqWHR_rhW38fxbdGZt658NQDMc_S6Kyj0
       - PYTHONUNBUFFERED=1

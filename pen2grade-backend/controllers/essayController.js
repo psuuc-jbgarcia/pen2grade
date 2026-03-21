@@ -1,5 +1,6 @@
 const Essay = require('../models/Essay');
 const Rubric = require('../models/Rubric');
+const User = require('../models/User');
 const fs = require('fs');
 const FormData = require('form-data');
 const axios = require('axios');
@@ -16,6 +17,21 @@ exports.uploadEssay = async (req, res) => {
 
     if (!rubricId || !studentName) {
       return res.status(400).json({ message: 'Rubric ID and student name are required' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const today = new Date().toDateString();
+    if (!user.lastAiCheckDate || user.lastAiCheckDate.toDateString() !== today) {
+      user.aiCheckCount = 0;
+      user.lastAiCheckDate = new Date();
+    }
+
+    if (user.aiCheckCount >= 10) {
+      return res.status(403).json({ message: 'Daily limit reached. The free version allows 10 uses per day.' });
     }
 
     // Determine file type
@@ -36,6 +52,9 @@ exports.uploadEssay = async (req, res) => {
     });
 
     const savedEssay = await newEssay.save();
+
+    user.aiCheckCount += 1;
+    await user.save();
 
     res.status(201).json({
       message: 'Essay uploaded successfully. AI processing has begun.',

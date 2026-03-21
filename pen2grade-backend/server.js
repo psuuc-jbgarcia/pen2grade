@@ -15,8 +15,8 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB Atlas'))
+mongoose.connect(process.env.MONGODB_URI, { dbName: 'pen2grade' })
+  .then(() => console.log('Connected to MongoDB Atlas (pen2grade DB)'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Mount Routes

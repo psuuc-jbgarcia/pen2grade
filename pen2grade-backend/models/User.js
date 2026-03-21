@@ -19,6 +19,14 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     default: 'teacher'
+  },
+  aiCheckCount: {
+    type: Number,
+    default: 0
+  },
+  lastAiCheckDate: {
+    type: Date,
+    default: null
   }
 }, { timestamps: true });
 
