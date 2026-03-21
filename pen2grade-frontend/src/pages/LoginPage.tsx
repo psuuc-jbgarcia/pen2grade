@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { BookOpen, LogIn, ChevronRight } from 'lucide-react';
+import InstallPWA from '../components/InstallPWA';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -30,6 +31,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      {/* PWA Install Button at top right */}
+      <div className="absolute top-6 right-6 z-20">
+        <InstallPWA />
+      </div>
       {/* Decorative Blobs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/10 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-600/10 blur-[120px]" />

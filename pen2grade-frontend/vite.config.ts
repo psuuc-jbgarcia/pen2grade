@@ -9,6 +9,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true
+      },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'Pen2Grade AI',
@@ -45,6 +48,13 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    strictPort: true
+    strictPort: true,
+    allowedHosts: true, // Jerico i off  to pag production na kupal ka
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      }
+    }
   }
 })
