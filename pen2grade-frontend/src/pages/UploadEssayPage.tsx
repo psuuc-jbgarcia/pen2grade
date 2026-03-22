@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import { Upload, FileText, Image as ImageIcon, File, ArrowLeft, Check, Sparkles, AlertCircle } from 'lucide-react';
+import { Upload, FileText, Image as ImageIcon, File, Check, Sparkles, AlertCircle, Camera } from 'lucide-react';
 
 interface Rubric { _id: string; title: string; }
 
@@ -18,12 +18,21 @@ export default function UploadEssayPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [remainingUses, setRemainingUses] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api.get('/rubrics').then(res => setRubrics(res.data));
     api.get('/auth/me').then(res => {
       if (res.data?.usage?.remaining !== undefined) setRemainingUses(res.data.usage.remaining);
     }).catch(() => { });
+
+    // Detect mobile: touch device OR narrow viewport OR mobile UA
+    const ua = navigator.userAgent;
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const isTouchDevice = navigator.maxTouchPoints > 1;
+    const isNarrow = window.innerWidth <= 768;
+    setIsMobile(isMobileUA || (isTouchDevice && isNarrow));
   }, []);
 
   const handleFile = (f: File) => {
@@ -82,21 +91,21 @@ export default function UploadEssayPage() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-10 bg-[#0b0f1a]">
-      <div className="max-w-2xl mx-auto space-y-8">
-        <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-white transition-all group">
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Dashboard
-        </Link>
+    <div className="flex-1 flex flex-col min-w-0">
+      <header className="px-6 md:px-10 py-6 shrink-0">
+        <h1 className="text-2xl font-extrabold text-white tracking-tight">Evaluate Essay</h1>
+      </header>
 
-        <div className="glass-card overflow-hidden">
-          <div className="p-8 bg-gradient-to-br from-indigo-600/10 to-transparent border-b border-white/5 relative overflow-hidden">
-            <Sparkles className="absolute top-8 right-8 text-indigo-500/20" size={120} />
-            <div className="relative z-10 space-y-2">
-              <h1 className="text-3xl font-black text-white tracking-tight">Evaluate Essay</h1>
-              <p className="text-gray-400 font-medium">Upload images, PDFs, or paste text. Gemini AI handles the rest.</p>
+      <div className="px-6 md:px-10 pb-10">
+        <div className="max-w-2xl mx-auto space-y-8">
+          <div className="glass-card overflow-hidden">
+            <div className="p-8 bg-gradient-to-br from-indigo-600/10 to-transparent border-b border-white/5 relative overflow-hidden">
+              <Sparkles className="absolute top-8 right-8 text-indigo-500/20" size={120} />
+              <div className="relative z-10 space-y-2">
+                <h1 className="text-3xl font-black text-white tracking-tight">Ready to Grade?</h1>
+                <p className="text-gray-400 font-medium text-sm">Upload images, PDFs, or paste text. Gemini AI handles the rest.</p>
+              </div>
             </div>
-          </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
             {error && (
@@ -147,6 +156,36 @@ export default function UploadEssayPage() {
             {uploadMode === 'file' ? (
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Document Upload</label>
+
+                {/* Mobile-only camera scan button */}
+                {isMobile && (
+                  <div className="mb-3 fade-in">
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={onFileChange}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="w-full flex items-center justify-center gap-3 py-4 px-5 rounded-2xl font-bold text-sm transition-all"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))',
+                        border: '2px solid rgba(99,102,241,0.35)',
+                        color: '#a5b4fc',
+                      }}
+                    >
+                      <Camera size={20} />
+                      Scan Handwritten Essay
+                      <span style={{ fontSize: '0.7rem', background: 'rgba(99,102,241,0.25)', padding: '2px 8px', borderRadius: '100px', letterSpacing: '0.05em' }}>CAMERA</span>
+                    </button>
+                    <p className="text-center text-[10px] text-gray-600 mt-1.5 font-semibold tracking-wide">Opens your rear camera to photograph the handwritten page</p>
+                  </div>
+                )}
+
                 <div
                   className={`relative rounded-3xl p-12 text-center transition-all cursor-pointer border-2 border-dashed group ${dragOver ? 'border-indigo-500 bg-indigo-500/10 scale-[0.99]' : 'border-white/10 bg-black/20 hover:border-white/20'
                     }`}
@@ -205,12 +244,12 @@ export default function UploadEssayPage() {
                   {remainingUses !== null ? `Free Version: You have ${remainingUses} uses left today.` : 'Free Version: 10 uses per day.'}
                 </p>
                 <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em] font-black pt-2">Powered by Google Gemini 2.5 Flash</p>
-                <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em] font-black pb-4 text-indigo-400">Developed by Jerico B. Garcia</p>
               </div>
             </div>
           </form>
         </div>
       </div>
+    </div>
     </div>
   );
 }

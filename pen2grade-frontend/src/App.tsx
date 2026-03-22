@@ -9,16 +9,18 @@ import NewRubricPage from './pages/NewRubricPage';
 import AllEssaysPage from './pages/AllEssaysPage';
 import UploadEssayPage from './pages/UploadEssayPage';
 import EssayResultPage from './pages/EssayResultPage';
+import LandingPage from './pages/LandingPage';
+import Layout from './components/Layout';
 
 const PrivateRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <Layout>{children}</Layout> : <Navigate to="/login" replace />;
 };
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />

@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { 
-  BookOpen, FileText, List, LogOut, Plus, 
+  FileText, Plus, List,
   CheckCircle, Clock, AlertCircle, Loader2, 
-  ChevronRight, LayoutDashboard,
-  Filter, Edit, Trash2, AlertTriangle
+  ChevronRight, Filter, Edit, Trash2, AlertTriangle
 } from 'lucide-react';
 import InstallPWA from '../components/InstallPWA';
 
@@ -26,7 +24,6 @@ interface Rubric {
 }
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
   const [essays, setEssays] = useState<Essay[]>([]);
   const [rubrics, setRubrics] = useState<Rubric[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,63 +80,23 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#0b0f1a]">
-      {/* Mobile Top Nav */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-surface/50 backdrop-blur-xl">
-        <div className="flex items-center gap-2">
-          <BookOpen className="text-indigo-500" />
-          <span className="font-bold text-white tracking-tight">Pen2Grade</span>
-        </div>
-        <button onClick={() => logout()} className="p-2 text-gray-400"><LogOut size={18} /></button>
-      </div>
-
-      {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex w-64 flex-col border-r border-white/5 bg-[#0e1320] p-6 space-y-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20">
-            <BookOpen color="white" size={24} />
+    <div className="flex-1 flex flex-col min-w-0">
+      <header className="flex items-center justify-between px-6 md:px-10 py-6 shrink-0">
+        <h1 className="text-2xl font-extrabold text-white tracking-tight">Overview</h1>
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:block">
+            <InstallPWA />
           </div>
-          <span className="text-xl font-extrabold text-white tracking-tight">Pen2Grade</span>
-        </div>
-
-        <nav className="flex-1 space-y-2">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-600/10 text-indigo-400 font-semibold transition-all">
-            <LayoutDashboard size={20} /> Dashboard
-          </button>
-        </nav>
-
-        <div className="pt-6 border-t border-white/5 space-y-4">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-[10px] font-bold text-white">
-              {user?.name?.charAt(0) || 'T'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white truncate">{user?.name}</p>
-              <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
-            </div>
+          <div className="relative hidden md:block">
+            <input placeholder="Search essays..." className="bg-white/5 border border-white/5 rounded-full py-2 pl-4 pr-4 text-sm focus:outline-none focus:border-indigo-500/50 w-64 transition-all" />
           </div>
-          <button onClick={() => logout()} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/5 transition-all font-medium">
-            <LogOut size={18} /> Logout
-          </button>
+          <Link to="/essays/upload" className="btn-primary py-2.5">
+            <Plus size={18} /> <span className="hidden sm:inline">Upload Essay</span>
+          </Link>
         </div>
-      </aside>
+      </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <header className="hidden md:flex items-center justify-between px-10 py-6 shrink-0">
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Overview</h1>
-            <div className="flex items-center gap-4">
-              <InstallPWA />
-              <div className="relative">
-                <input placeholder="Search essays..." className="bg-white/5 border border-white/5 rounded-full py-2 pl-4 pr-4 text-sm focus:outline-none focus:border-indigo-500/50 w-64 transition-all" />
-              </div>
-              <Link to="/essays/upload" className="btn-primary py-2.5">
-                <Plus size={18} /> Upload Essay
-              </Link>
-            </div>
-        </header>
-
-        <section className="flex-1 overflow-y-auto px-6 md:px-10 pb-10 space-y-10 pt-6 md:pt-0 custom-scrollbar">
+      <section className="flex-1 overflow-y-auto px-6 md:px-10 pb-10 space-y-10 custom-scrollbar">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {stats.map((s, i) => (
@@ -293,7 +250,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </section>
-      </main>
     </div>
   );
 }

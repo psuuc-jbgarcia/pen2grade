@@ -98,7 +98,6 @@ export default function LoginPage() {
               Create an account
             </Link>
           </p>
-          <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em] font-black mt-2">Developed by Jerico B. Garcia</p>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { 
-  List, Plus, Edit, Trash2, ArrowLeft, 
+  Plus, Edit, Trash2, 
   Loader2, AlertTriangle, FileText
 } from 'lucide-react';
 
@@ -48,35 +48,31 @@ export default function RubricsPage() {
   );
 
   return (
-    <div className="min-h-screen p-4 md:p-10 bg-[#0b0f1a]">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-white transition-all group">
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-              Back to Dashboard
-            </Link>
-            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center gap-3">
-               <List className="text-indigo-500" size={32} />
-               Manage Rubrics
-            </h1>
-            <p className="text-gray-400 font-medium">Create, edit, and organize your evaluation templates</p>
+    <div className="flex-1 flex flex-col min-w-0">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-6 md:px-10 py-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
+             Manage Rubrics
+          </h1>
+          <p className="text-gray-400 font-medium">Create, edit, and organize your evaluation templates</p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative w-full sm:w-64">
+            <input 
+              placeholder="Search rubrics..." 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="input-field pl-4 py-2.5 text-sm w-full" 
+            />
           </div>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="relative w-full sm:w-64">
-              <input 
-                placeholder="Search rubrics..." 
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="input-field pl-4 py-2.5 text-sm w-full" 
-              />
-            </div>
-            <Link to="/rubrics/new" className="btn-primary py-2.5 w-full sm:w-auto">
-              <Plus size={18} /> New Rubric
-            </Link>
-          </div>
-        </header>
+          <Link to="/rubrics/new" className="btn-primary py-2.5 w-full sm:w-auto">
+            <Plus size={18} /> New Rubric
+          </Link>
+        </div>
+      </header>
+
+      <div className="px-6 md:px-10 pb-10 space-y-8">
 
         {loading ? (
           <div className="glass-card p-20 flex flex-col items-center justify-center gap-4">

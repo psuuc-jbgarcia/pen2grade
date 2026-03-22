@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Download, Smartphone } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 export default function InstallPWA() {
   const [supportsPWA, setSupportsPWA] = useState(false);

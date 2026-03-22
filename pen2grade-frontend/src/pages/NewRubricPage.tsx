@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
-import { Plus, Trash2, ArrowLeft, Save, Info, AlertCircle, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Save, Info, AlertCircle, Loader2 } from 'lucide-react';
 
 interface Criterion { name: string; weight: number; description: string; }
 
@@ -70,27 +70,29 @@ export default function NewRubricPage() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-10 bg-[#0b0f1a]">
-      <div className="max-w-3xl mx-auto space-y-8">
-        <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-white transition-all group">
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Dashboard
-        </Link>
+    <div className="flex-1 flex flex-col min-w-0">
+      <header className="px-6 md:px-10 py-6 shrink-0">
+        <h1 className="text-2xl font-extrabold text-white tracking-tight">
+          {isEdit ? 'Refine Rubric' : 'Design Rubric'}
+        </h1>
+      </header>
 
-        {fetching ? (
-          <div className="glass-card p-20 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="animate-spin text-indigo-500" size={48} />
-            <p className="text-gray-500 font-black uppercase tracking-widest text-xs">Loading Rubric Details...</p>
-          </div>
-        ) : (
-          <div className="glass-card overflow-hidden">
-            <div className="p-6 md:p-8 bg-white/5 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                  {isEdit ? 'Refine Rubric' : 'Design Rubric'}
-                </h1>
-                <p className="text-sm text-gray-400 font-medium">Define how the AI should evaluate your students' work</p>
-              </div>
+      <div className="px-6 md:px-10 pb-10">
+        <div className="max-w-3xl mx-auto space-y-8">
+          {fetching ? (
+            <div className="glass-card p-20 flex flex-col items-center justify-center gap-4">
+              <Loader2 className="animate-spin text-indigo-500" size={48} />
+              <p className="text-gray-500 font-black uppercase tracking-widest text-xs">Loading Rubric Details...</p>
+            </div>
+          ) : (
+            <div className="glass-card overflow-hidden">
+              <div className="p-6 md:p-8 bg-white/5 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                    {isEdit ? 'Update Rubric' : 'Create Rubric'}
+                  </h1>
+                  <p className="text-sm text-gray-400 font-medium">Define how the AI should evaluate your students' work</p>
+                </div>
             <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 transition-all ${totalWeight === 100 ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-red-500/20 bg-red-500/10 text-red-400'}`}>
               <span className={`w-2 h-2 rounded-full animate-pulse ${totalWeight === 100 ? 'bg-emerald-400' : 'bg-red-400'}`} />
               <span className="text-sm font-black">Total: {totalWeight}%</span>
@@ -188,6 +190,7 @@ export default function NewRubricPage() {
         </div>
         )}
       </div>
+    </div>
     </div>
   );
 }
