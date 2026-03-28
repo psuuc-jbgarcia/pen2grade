@@ -4,7 +4,8 @@ import api from '../api/axios';
 import { 
   ArrowLeft, CheckCircle, AlertCircle, Loader2, 
   FileText, Sparkles, Target, BarChart3, MessageSquare, 
-  History, Download, Share2, ShieldAlert, FileSearch, Clock
+  History, Download, Share2, ShieldAlert, FileSearch, Clock,
+  Pencil, Check, X
 } from 'lucide-react';
 
 interface Essay {
@@ -22,16 +23,71 @@ export default function EssayResultPage() {
   const { id } = useParams();
   const [essay, setEssay] = useState<Essay | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedBreakdown, setEditedBreakdown] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+
+  // Derived total score for editing mode
+  const calculatedTotal = Object.values(editedBreakdown).reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
 
   const fetchEssay = async () => {
     try {
       const res = await api.get(`/essays/${id}`);
       setEssay(res.data);
+      if (!isEditing) {
+        const breakdownScores: Record<string, string> = {};
+        if (res.data.aiFeedback?.breakdown) {
+          Object.entries(res.data.aiFeedback.breakdown).forEach(([name, data]: [string, any]) => {
+            breakdownScores[name] = data.score.toString();
+          });
+        }
+        setEditedBreakdown(breakdownScores);
+      }
     } catch (err) {
       console.error("Fetch error", err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const breakdownUpdate: Record<string, { score: number }> = {};
+      Object.entries(editedBreakdown).forEach(([name, score]) => {
+        breakdownUpdate[name] = { score: parseFloat(score) || 0 };
+      });
+
+      await api.put(`/essays/${id}`, {
+        totalScore: calculatedTotal,
+        aiFeedbackBreakdown: breakdownUpdate
+      });
+      
+      setIsEditing(false);
+      await fetchEssay();
+    } catch (err: any) {
+      console.error("Update error", err);
+      const status = err.response?.status;
+      const msg = err.response?.data?.message || err.message || "Unknown error";
+      alert(`Update Failed (Status ${status}): ${msg}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (essay) {
+      const breakdownScores: Record<string, string> = {};
+      if (essay.aiFeedback?.breakdown) {
+        Object.entries(essay.aiFeedback.breakdown).forEach(([name, data]) => {
+          breakdownScores[name] = data.score.toString();
+        });
+      }
+      setEditedBreakdown(breakdownScores);
+    }
+    setIsEditing(false);
   };
 
   useEffect(() => {
@@ -86,6 +142,36 @@ export default function EssayResultPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 md:gap-3 shrink-0">
+             {isCompleted && (
+               <>
+                 {!isEditing ? (
+                   <button 
+                     onClick={() => setIsEditing(true)}
+                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs font-bold hover:bg-indigo-500/20 transition-all border border-indigo-500/20"
+                   >
+                     <Pencil size={14} /> Override
+                   </button>
+                 ) : (
+                   <div className="flex items-center gap-1">
+                     <button 
+                       onClick={handleSave}
+                       disabled={saving}
+                       className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all border border-emerald-500/20 disabled:opacity-50"
+                     >
+                       {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} 
+                       <span className="hidden sm:inline">Save</span>
+                     </button>
+                     <button 
+                       onClick={handleCancel}
+                       className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all border border-red-500/20"
+                     >
+                       <X size={14} /> 
+                       <span className="hidden sm:inline">Cancel</span>
+                     </button>
+                   </div>
+                 )}
+               </>
+             )}
              <button 
                 onClick={() => alert('Export PDF feature is currently under development.')}
                 className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 text-gray-300 text-xs font-bold hover:bg-white/10 transition-all border border-white/5"
@@ -131,8 +217,17 @@ export default function EssayResultPage() {
                         </defs>
                      </svg>
                      <div className="absolute flex flex-col items-center">
-                        <span className="text-4xl font-black text-white">{isCompleted ? `${Math.round(essay.totalScore)}` : '?'}</span>
-                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Score / 100</span>
+                        {isEditing ? (
+                          <div className="flex flex-col items-center">
+                             <span className="text-4xl font-black text-indigo-400">{Math.round(calculatedTotal)}</span>
+                             <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mt-1">Calculated Total</span>
+                          </div>
+                        ) : (
+                          <>
+                             <span className="text-4xl font-black text-white">{isCompleted ? `${Math.round(essay.totalScore)}` : '?'}</span>
+                             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Score / 100</span>
+                          </>
+                        )}
                      </div>
                   </div>
 
@@ -216,13 +311,29 @@ export default function EssayResultPage() {
                       return (
                         <div key={idx} className="p-6 space-y-4 hover:bg-white/[0.02] transition-colors">
                            <div className="flex items-start justify-between gap-4">
-                              <div className="space-y-1">
-                                 <p className="font-extrabold text-white text-base">{name}</p>
-                                 <p className="text-xs text-gray-500 font-medium leading-relaxed">{data.feedback}</p>
+                              <div className="space-y-1 min-w-0">
+                                 <p className="font-extrabold text-white text-base truncate">{name}</p>
+                                 <p className="text-xs text-gray-500 font-medium leading-relaxed line-clamp-2">{data.feedback}</p>
                               </div>
-                              <div className="text-right">
-                                 <span className="text-lg font-black text-white">{data.score.toFixed(1)}</span>
-                                 <span className="text-[10px] font-black text-gray-500 block">/ {data.max}</span>
+                              <div className="text-right shrink-0">
+                                 {isEditing ? (
+                                   <div className="flex flex-col items-end">
+                                      <input 
+                                        type="number"
+                                        step="0.5"
+                                        max={data.max}
+                                        value={editedBreakdown[name] || ''}
+                                        onChange={(e) => setEditedBreakdown({...editedBreakdown, [name]: e.target.value})}
+                                        className="w-16 bg-white/10 border border-white/20 rounded-lg text-right text-base font-black text-white px-2 py-1 outline-none focus:border-indigo-500/50 transition-colors"
+                                      />
+                                      <span className="text-[10px] font-black text-gray-500 block">/ {data.max}</span>
+                                   </div>
+                                 ) : (
+                                   <>
+                                      <span className="text-lg font-black text-white">{data.score.toFixed(1)}</span>
+                                      <span className="text-[10px] font-black text-gray-500 block">/ {data.max}</span>
+                                   </>
+                                 )}
                               </div>
                            </div>
                            <div className="h-2 rounded-full bg-white/5 overflow-hidden">

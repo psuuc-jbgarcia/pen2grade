@@ -2,11 +2,12 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
-import { BookOpen, UserPlus, ChevronRight, ArrowLeft } from 'lucide-react';
+import { BookOpen, UserPlus, ChevronRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -81,11 +82,19 @@ export default function RegisterPage() {
             <label className="text-xs font-bold ml-1 text-gray-400 uppercase tracking-widest">Secure Password</label>
             <div className="relative group">
               <input
-                type="password" required value={form.password}
+                type={showPassword ? "text" : "password"} required value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
                 placeholder="••••••••"
-                className="input-field pl-4"
+                className="input-field pl-4 pr-12"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
           </div>
 

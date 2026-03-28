@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import { BookOpen, LogIn, ChevronRight } from 'lucide-react';
+import { BookOpen, LogIn, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import InstallPWA from '../components/InstallPWA';
 
 export default function LoginPage() {
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +24,12 @@ export default function LoginPage() {
       login(res.data.token, res.data.user);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+      const message = err.response?.data?.message;
+      if (message) {
+        setError(message);
+      } else {
+        setError('Invalid credentials. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -71,10 +77,18 @@ export default function LoginPage() {
             <label className="text-sm font-bold ml-1 text-gray-300 uppercase tracking-wider">Password</label>
             <div className="relative group">
               <input
-                type="password" required value={password} onChange={e => setPassword(e.target.value)}
+                type={showPassword ? "text" : "password"} required value={password} onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="input-field pl-4"
+                className="input-field pl-4 pr-12"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
           </div>
 

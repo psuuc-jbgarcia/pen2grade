@@ -152,3 +152,59 @@ exports.getEssayById = async (req, res) => {
     res.status(500).json({ message: 'Server error fetching essay' });
   }
 };
+
+exports.updateEssay = async (req, res) => {
+  try {
+    const { totalScore, aiFeedbackBreakdown } = req.body;
+    const essay = await Essay.findById(req.params.id);
+
+    if (!essay) {
+      return res.status(404).json({ message: 'Essay not found' });
+    }
+
+    if (!req.user || !req.user._id) {
+       return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // Convert both to string for reliable comparison
+    if (essay.teacher.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to edit this essay' });
+    }
+
+    if (totalScore !== undefined) {
+      essay.totalScore = totalScore;
+    }
+
+    if (aiFeedbackBreakdown !== undefined) {
+      // Ensure aiFeedback and breakdown exist
+      if (!essay.aiFeedback) essay.aiFeedback = {};
+      if (!essay.aiFeedback.breakdown) essay.aiFeedback.breakdown = {};
+
+      // Merge breakdown update to preserve max and feedback
+      const newBreakdown = { ...essay.aiFeedback.breakdown };
+      Object.entries(aiFeedbackBreakdown).forEach(([name, data]) => {
+        if (newBreakdown[name]) {
+          newBreakdown[name] = {
+            ...newBreakdown[name],
+            score: data.score
+          };
+        } else {
+          newBreakdown[name] = data;
+        }
+      });
+      
+      essay.aiFeedback = {
+        ...essay.aiFeedback,
+        breakdown: newBreakdown
+      };
+      
+      essay.markModified('aiFeedback');
+    }
+
+    const updatedEssay = await essay.save();
+    res.json(updatedEssay);
+  } catch (error) {
+    console.error('Update essay error:', error);
+    res.status(500).json({ message: error.message || 'Server error updating essay' });
+  }
+};

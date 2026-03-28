@@ -8,7 +8,7 @@ router.route('/')
   .post(protect, upload.single('document'), essayController.uploadEssay)
   .get(protect, essayController.getEssays);
 
-router.route('/:id')
-  .get(protect, essayController.getEssayById);
+router.get('/:id', protect, essayController.getEssayById);
+router.put('/:id', protect, essayController.updateEssay);
 
 module.exports = router;

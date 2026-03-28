@@ -45,18 +45,60 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(`[AUTH] Login attempt: ${email}`);
 
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
+      console.log(`[AUTH] User not found: ${email}`);
       return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if account is locked
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      const remainingSeconds = Math.ceil((user.lockUntil - Date.now()) / 1000);
+      const remainingMinutes = Math.ceil(remainingSeconds / 60);
+      console.log(`[AUTH] User ${email} is LOCKED for ${remainingSeconds}s`);
+      return res.status(403).json({ 
+        message: `Account temporarily locked due to 5 failed attempts. Please try again in ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}.`,
+        isLocked: true,
+        remainingSeconds
+      });
     }
 
     // Validate password
     const isMatch = await bcrypt.compare(password, user.password);
+    
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      // Increment login attempts
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      console.log(`[AUTH] Failed login for ${email}. Total attempts: ${user.loginAttempts}`);
+      
+      // If 5 or more attempts, lock the account for 5 minutes
+      if (user.loginAttempts >= 5) {
+        user.lockUntil = new Date(Date.now() + 5 * 60 * 1000);
+        console.log(`[AUTH] LOCKING account ${email} until ${user.lockUntil.toISOString()}`);
+        await user.save();
+        return res.status(403).json({ 
+          message: 'Account locked due to 5 failed attempts. Please try again after 5 minutes.',
+          isLocked: true,
+          remainingSeconds: 300
+        });
+      }
+      
+      await user.save();
+      const remainingAttempts = 5 - user.loginAttempts;
+      return res.status(401).json({ 
+        message: `Invalid credentials. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining before lockout.`,
+        remainingAttempts
+      });
     }
+
+    // Successful login: reset attempts and lockout
+    console.log(`[AUTH] Login SUCCESS for ${email}. Resetting attempts.`);
+    user.loginAttempts = 0;
+    user.lockUntil = undefined;
+    await user.save();
 
     // Create and assign a token
     const token = jwt.sign(
@@ -77,7 +119,7 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('[AUTH] Login Error:', error);
     res.status(500).json({ message: 'Server error during login' });
   }
 };

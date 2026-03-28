@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   BookOpen, Zap, ShieldCheck, BarChart3, ChevronRight,
-  CheckCircle2, ArrowRight, Sparkles, Clock, Users,
-  FileText, Brain, GraduationCap, Menu, X, Star
+  CheckCircle2, ArrowRight, Sparkles, Clock,
+  FileText, Brain, GraduationCap, Menu, X, Star, Edit3
 } from 'lucide-react';
 
 // ─── Feature Card ─────────────────────────────────────────────────
@@ -536,10 +536,10 @@ export default function LandingPage() {
                 delay={400}
               />
               <FeatureCard
-                icon={<Users size={24} color="white" />}
-                title="Multi-Class Support"
-                desc="Manage essays and rubrics across multiple classes and subjects from a single, unified dashboard."
-                gradient="linear-gradient(135deg, #8b5cf6, #6d28d9)"
+                icon={<Edit3 size={24} color="white" />}
+                title="Teacher Score Override"
+                desc="Maintain full control with the ability to manually adjust AI-generated scores and feedback as needed."
+                gradient="linear-gradient(135deg, #6366f1, #4338ca)"
                 delay={500}
               />
             </div>
