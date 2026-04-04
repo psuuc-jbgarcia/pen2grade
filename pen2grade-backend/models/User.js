@@ -28,6 +28,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  cameraScanCount: {
+    type: Number,
+    default: 0
+  },
+  lastCameraScanDate: {
+    type: Date,
+    default: null
+  },
   loginAttempts: {
     type: Number,
     required: true,

@@ -26,7 +26,7 @@ services:
       - ./pen2grade-backend:/app
       - /app/node_modules
     env_file:
-      - ./pen2grade-backend/.env
+      - .env
     environment:
       - PORT=3000
       - AI_SERVICE_URL=http://ai-service:8000
@@ -42,6 +42,6 @@ services:
     volumes:
       - ./pen2grade-ai:/app
     env_file:
-      - ./pen2grade-ai/.env
+      - .env
     environment:
       - PYTHONUNBUFFERED=1

@@ -15,6 +15,7 @@ interface Essay {
   totalScore: number; 
   createdAt: string; 
   rubric: { title: string }; 
+  aiFeedback?: { breakdown: Record<string, { max: number }> };
 }
 
 interface Rubric { 
@@ -45,6 +46,15 @@ export default function DashboardPage() {
     };
     fetchData();
   }, []);
+
+  const getNormalizedScore = (e: Essay) => {
+    if (e.totalScore == null) return null;
+    const totalMax = e.aiFeedback?.breakdown 
+      ? Object.values(e.aiFeedback.breakdown).reduce((acc, val) => acc + (val.max || 0), 0)
+      : 100;
+    if (totalMax === 0) return 0;
+    return (e.totalScore / totalMax) * 100;
+  };
 
   const stats = [
     { label: 'Total Essays',   value: essays.length, icon: <FileText size={22} />, color: 'from-blue-600 to-indigo-600' },
@@ -167,7 +177,7 @@ export default function DashboardPage() {
                               </td>
                               <td className="px-6 py-5">
                                 {e.totalScore != null ? (
-                                  <span className="text-sm font-black text-emerald-400">{e.totalScore.toFixed(0)}%</span>
+                                  <span className="text-sm font-black text-emerald-400">{getNormalizedScore(e)?.toFixed(0)}%</span>
                                 ) : (
                                   <span className="text-gray-600">—</span>
                                 )}

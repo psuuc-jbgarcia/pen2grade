@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
-import { BookOpen, UserPlus, ChevronRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { BookOpen, UserPlus, ChevronRight, ArrowLeft, Eye, EyeOff, Check, X } from 'lucide-react';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -11,8 +11,13 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const hasMinLength = form.password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(form.password);
+  const isPasswordValid = hasMinLength && hasUppercase;
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!isPasswordValid) return;
     setError('');
     setLoading(true);
     try {
@@ -96,9 +101,21 @@ export default function RegisterPage() {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
+            
+            {/* Password Validation Checklist */}
+            <div className={`mt-2 space-y-1 text-sm bg-black/20 p-3 rounded-lg border border-white/5 transition-all duration-300 ${form.password.length > 0 ? 'opacity-100 max-h-32' : 'opacity-0 max-h-0 overflow-hidden py-0 border-0'}`}>
+              <div className={`flex items-center gap-2 ${hasMinLength ? 'text-green-400' : 'text-gray-400'}`}>
+                 {hasMinLength ? <Check size={14} /> : <X size={14} />}
+                 <span>At least 8 characters</span>
+              </div>
+              <div className={`flex items-center gap-2 ${hasUppercase ? 'text-green-400' : 'text-gray-400'}`}>
+                 {hasUppercase ? <Check size={14} /> : <X size={14} />}
+                 <span>At least 1 uppercase letter</span>
+              </div>
+            </div>
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary w-full justify-center text-base py-3.5 mt-4 group">
+          <button type="submit" disabled={loading || (form.password.length > 0 && !isPasswordValid)} className="btn-primary w-full justify-center text-base py-3.5 mt-4 group disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (

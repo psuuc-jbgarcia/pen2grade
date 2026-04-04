@@ -83,16 +83,13 @@ def gemini_evaluation(request: EvaluationRequest) -> Dict:
     
     try:
         print(f"Sending request to Gemini for rubric: {request.rubric_title}")
-        response = model.generate_content(prompt)
-        # Clean the response in case it contains markdown formatting
+        response = model.generate_content(
+            prompt,
+            generation_config={"response_mime_type": "application/json"}
+        )
         text_response = response.text
         print(f"Raw Gemini response: {text_response[:200]}...")
         
-        if text_response.strip().startswith("```json"):
-            text_response = text_response.strip()[7:-3].strip()
-        elif text_response.strip().startswith("```"):
-            text_response = text_response.strip()[3:-3].strip()
-            
         result = json.loads(text_response)
         result["status"] = "success"
         result["mock_mode"] = False

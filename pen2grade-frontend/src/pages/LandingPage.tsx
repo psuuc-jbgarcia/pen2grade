@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   BookOpen, Zap, ShieldCheck, BarChart3, ChevronRight,
   CheckCircle2, ArrowRight, Sparkles, Clock,
-  FileText, Brain, GraduationCap, Menu, X, Star, Edit3
+  FileText, Brain, GraduationCap, Menu, X, Star, Edit3, Camera
 } from 'lucide-react';
 
 // ─── Feature Card ─────────────────────────────────────────────────
@@ -541,6 +541,13 @@ export default function LandingPage() {
                 desc="Maintain full control with the ability to manually adjust AI-generated scores and feedback as needed."
                 gradient="linear-gradient(135deg, #6366f1, #4338ca)"
                 delay={500}
+              />
+              <FeatureCard
+                icon={<Camera size={24} color="white" />}
+                title="In-Browser Mobile Scanning"
+                desc="Easily scan handwritten essays using your smartphone camera for instant evaluation."
+                gradient="linear-gradient(135deg, #6366f1, #ec4899)"
+                delay={600}
               />
             </div>
           </div>

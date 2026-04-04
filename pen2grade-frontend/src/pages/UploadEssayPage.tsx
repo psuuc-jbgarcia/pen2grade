@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
@@ -18,21 +18,27 @@ export default function UploadEssayPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [remainingUses, setRemainingUses] = useState<number | null>(null);
+  const [remainingCameraUses, setRemainingCameraUses] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api.get('/rubrics').then(res => setRubrics(res.data));
     api.get('/auth/me').then(res => {
       if (res.data?.usage?.remaining !== undefined) setRemainingUses(res.data.usage.remaining);
+      if (res.data?.cameraScanUsage?.remaining !== undefined) setRemainingCameraUses(res.data.cameraScanUsage.remaining);
     }).catch(() => { });
 
-    // Detect mobile: touch device OR narrow viewport OR mobile UA
-    const ua = navigator.userAgent;
-    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-    const isTouchDevice = navigator.maxTouchPoints > 1;
-    const isNarrow = window.innerWidth <= 768;
-    setIsMobile(isMobileUA || (isTouchDevice && isNarrow));
+    const checkMobile = () => {
+      const ua = navigator.userAgent;
+      const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+      const isTouchDevice = navigator.maxTouchPoints > 1;
+      const isNarrow = window.innerWidth <= 768;
+      setIsMobile(isMobileUA || (isTouchDevice && isNarrow));
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const handleFile = (f: File) => {
@@ -83,6 +89,11 @@ export default function UploadEssayPage() {
       formData.append('document', submissionFile);
       formData.append('rubricId', rubricId);
       formData.append('studentName', studentName);
+      
+      if (uploadMode === 'file' && isMobile) {
+        formData.append('isCameraScan', 'true');
+      }
+
       const res = await api.post('/essays', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       navigate(`/essays/${res.data.essay._id}`);
     } catch (err: any) {
@@ -157,34 +168,7 @@ export default function UploadEssayPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Document Upload</label>
 
-                {/* Mobile-only camera scan button */}
-                {isMobile && (
-                  <div className="mb-3 fade-in">
-                    <input
-                      ref={cameraInputRef}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      className="hidden"
-                      onChange={onFileChange}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => cameraInputRef.current?.click()}
-                      className="w-full flex items-center justify-center gap-3 py-4 px-5 rounded-2xl font-bold text-sm transition-all"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))',
-                        border: '2px solid rgba(99,102,241,0.35)',
-                        color: '#a5b4fc',
-                      }}
-                    >
-                      <Camera size={20} />
-                      Scan Handwritten Essay
-                      <span style={{ fontSize: '0.7rem', background: 'rgba(99,102,241,0.25)', padding: '2px 8px', borderRadius: '100px', letterSpacing: '0.05em' }}>CAMERA</span>
-                    </button>
-                    <p className="text-center text-[10px] text-gray-600 mt-1.5 font-semibold tracking-wide">Opens your rear camera to photograph the handwritten page</p>
-                  </div>
-                )}
+
 
                 <div
                   className={`relative rounded-3xl p-12 text-center transition-all cursor-pointer border-2 border-dashed group ${dragOver ? 'border-indigo-500 bg-indigo-500/10 scale-[0.99]' : 'border-white/10 bg-black/20 hover:border-white/20'
@@ -194,10 +178,10 @@ export default function UploadEssayPage() {
                   onDrop={onDrop}
                   onClick={() => document.getElementById('file-input')?.click()}
                 >
-                  <input id="file-input" type="file" accept=".jpg,.jpeg,.png,.pdf,.txt" className="hidden" onChange={onFileChange} />
+                  <input id="file-input" type="file" accept=".jpg,.jpeg,.png,.pdf,.txt" capture={isMobile ? "environment" : undefined} className="hidden" onChange={onFileChange} />
                   <div className="flex flex-col items-center gap-4">
                     <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
-                      {fileIcon()}
+                      {isMobile && !file ? <Camera size={48} className="text-indigo-400" /> : fileIcon()}
                     </div>
                     {file ? (
                       <div className="space-y-1">
@@ -208,8 +192,8 @@ export default function UploadEssayPage() {
                       </div>
                     ) : (
                       <div className="space-y-1">
-                        <p className="font-bold text-gray-300 text-lg">Drop your essay here</p>
-                        <p className="text-sm text-gray-500">JPG, PNG, PDF, or Plain Text (Max 10MB)</p>
+                        <p className="font-bold text-gray-300 text-lg">{isMobile ? "Tap to open Camera" : "Drop your essay here"}</p>
+                        <p className="text-sm text-gray-500">{isMobile ? "Scan your handwritten essay instantly" : "JPG, PNG, PDF, or Plain Text (Max 10MB)"}</p>
                       </div>
                     )}
                   </div>
@@ -241,9 +225,14 @@ export default function UploadEssayPage() {
               </button>
               <div className="text-center mt-6 space-y-1">
                 <p className="text-[12px] text-gray-400 font-bold tracking-wide">
-                  {remainingUses !== null ? `Free Version: You have ${remainingUses} uses left today.` : 'Free Version: 10 uses per day.'}
+                  {remainingUses !== null ? `Free Version: You have ${remainingUses} AI uses left today.` : 'Free Version: 10 AI uses per day.'}
                 </p>
-                <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em] font-black pt-2">Powered by Google Gemini 2.5 Flash</p>
+                {isMobile && uploadMode === 'file' && (
+                  <p className="text-[12px] text-indigo-400 font-bold tracking-wide fade-in mt-1">
+                    {remainingCameraUses !== null ? `Camera Scanner: ${remainingCameraUses} scans remaining today.` : 'Camera Scanner: 3 scans per day.'}
+                  </p>
+                )}
+                <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em] font-black pt-3">Powered by Google Gemini 2.5 Flash</p>
               </div>
             </div>
           </form>

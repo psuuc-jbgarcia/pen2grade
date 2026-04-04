@@ -32,6 +32,13 @@ export default function EssayResultPage() {
   // Derived total score for editing mode
   const calculatedTotal = Object.values(editedBreakdown).reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
 
+  const totalMaxScore = essay?.aiFeedback?.breakdown 
+    ? Object.values(essay.aiFeedback.breakdown).reduce((acc: number, val: any) => acc + (val.max || 0), 0)
+    : 100;
+
+  const normalizedCalculatedTotal = totalMaxScore > 0 ? (calculatedTotal / totalMaxScore) * 100 : 0;
+  const normalizedTotalScore = essay && totalMaxScore > 0 ? ((essay.totalScore || 0) / totalMaxScore) * 100 : 0;
+
   const fetchEssay = async () => {
     try {
       const res = await api.get(`/essays/${id}`);
@@ -205,7 +212,7 @@ export default function EssayResultPage() {
                         <circle 
                           cx="80" cy="80" r="72" fill="none" stroke="url(#scoreGradient)" strokeWidth="12" 
                           strokeDasharray={452.4} 
-                          strokeDashoffset={isCompleted ? 452.4 - (452.4 * (essay.totalScore || 0) / 100) : 452.4}
+                          strokeDashoffset={isCompleted ? 452.4 - (452.4 * (isEditing ? normalizedCalculatedTotal : normalizedTotalScore) / 100) : 452.4}
                           strokeLinecap="round"
                           className="transition-all duration-1000 ease-out"
                         />
@@ -219,12 +226,12 @@ export default function EssayResultPage() {
                      <div className="absolute flex flex-col items-center">
                         {isEditing ? (
                           <div className="flex flex-col items-center">
-                             <span className="text-4xl font-black text-indigo-400">{Math.round(calculatedTotal)}</span>
-                             <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mt-1">Calculated Total</span>
+                             <span className="text-4xl font-black text-indigo-400">{Math.round(normalizedCalculatedTotal)}</span>
+                             <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mt-1">Calculated Total / 100</span>
                           </div>
                         ) : (
                           <>
-                             <span className="text-4xl font-black text-white">{isCompleted ? `${Math.round(essay.totalScore)}` : '?'}</span>
+                             <span className="text-4xl font-black text-white">{isCompleted ? `${Math.round(normalizedTotalScore)}` : '?'}</span>
                              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Score / 100</span>
                           </>
                         )}
@@ -323,7 +330,13 @@ export default function EssayResultPage() {
                                         step="0.5"
                                         max={data.max}
                                         value={editedBreakdown[name] || ''}
-                                        onChange={(e) => setEditedBreakdown({...editedBreakdown, [name]: e.target.value})}
+                                        onChange={(e) => {
+                                          let val = Number(e.target.value);
+                                          if (val > data.max) val = data.max;
+                                          if (val < 0) val = 0;
+                                          const strVal = e.target.value === '' ? '' : val.toString();
+                                          setEditedBreakdown({...editedBreakdown, [name]: strVal});
+                                        }}
                                         className="w-16 bg-white/10 border border-white/20 rounded-lg text-right text-base font-black text-white px-2 py-1 outline-none focus:border-indigo-500/50 transition-colors"
                                       />
                                       <span className="text-[10px] font-black text-gray-500 block">/ {data.max}</span>

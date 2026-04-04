@@ -34,6 +34,19 @@ exports.uploadEssay = async (req, res) => {
       return res.status(403).json({ message: 'Daily limit reached. The free version allows 10 uses per day.' });
     }
 
+    // Camera Scan Rate Limit Logic
+    const isCameraScan = req.body.isCameraScan === 'true' || req.body.isCameraScan === true;
+    if (isCameraScan) {
+      if (!user.lastCameraScanDate || user.lastCameraScanDate.toDateString() !== today) {
+        user.cameraScanCount = 0;
+        user.lastCameraScanDate = new Date();
+      }
+      
+      if (user.cameraScanCount >= 3) {
+        return res.status(403).json({ message: 'Daily limit reached. The free version allows 3 camera scans per day.' });
+      }
+    }
+
     // Determine file type
     let fileType = 'unknown';
     if (req.file.mimetype.startsWith('image/')) fileType = 'image';
@@ -54,6 +67,9 @@ exports.uploadEssay = async (req, res) => {
     const savedEssay = await newEssay.save();
 
     user.aiCheckCount += 1;
+    if (isCameraScan) {
+      user.cameraScanCount += 1;
+    }
     await user.save();
 
     res.status(201).json({

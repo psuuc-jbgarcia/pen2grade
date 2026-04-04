@@ -14,6 +14,7 @@ interface Essay {
   totalScore: number; 
   createdAt: string; 
   rubric: { title: string }; 
+  aiFeedback?: { breakdown: Record<string, { max: number }> };
 }
 
 export default function AllEssaysPage() {
@@ -34,6 +35,15 @@ export default function AllEssaysPage() {
     };
     fetchEssays();
   }, []);
+
+  const getNormalizedScore = (e: Essay) => {
+    if (e.totalScore == null) return null;
+    const totalMax = e.aiFeedback?.breakdown 
+      ? Object.values(e.aiFeedback.breakdown).reduce((acc, val) => acc + (val.max || 0), 0)
+      : 100;
+    if (totalMax === 0) return 0;
+    return (e.totalScore / totalMax) * 100;
+  };
 
   const statusBadge = (s: string) => {
     const configs: any = {
@@ -136,7 +146,7 @@ export default function AllEssaysPage() {
                       </td>
                       <td className="px-6 py-5">
                         {e.totalScore != null ? (
-                          <span className="text-sm font-black text-emerald-400">{e.totalScore.toFixed(0)}%</span>
+                          <span className="text-sm font-black text-emerald-400">{getNormalizedScore(e)?.toFixed(0)}%</span>
                         ) : (
                           <span className="text-gray-600">—</span>
                         )}

@@ -2,11 +2,19 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
 exports.register = async (req, res) => {
   try {
     const { email, password, name } = req.body;
+
+    // Server-side password validation
+    const hasMinLength = password && password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(password);
+
+    if (!hasMinLength || !hasUppercase) {
+      return res.status(400).json({ 
+        message: 'Password must be at least 8 characters long and contain at least one uppercase letter.' 
+      });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -103,7 +111,7 @@ exports.login = async (req, res) => {
     // Create and assign a token
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      JWT_SECRET,
+      process.env.JWT_SECRET || 'fallback_secret_if_env_fails',
       { expiresIn: '24h' }
     );
 
@@ -129,10 +137,17 @@ exports.getMe = async (req, res) => {
     const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
     
+    // Calculate standard AI Check usages
     const today = new Date().toDateString();
     let count = user.aiCheckCount || 0;
     if (!user.lastAiCheckDate || user.lastAiCheckDate.toDateString() !== today) {
       count = 0;
+    }
+    
+    // Calculate Camera Scan usages
+    let cameraCount = user.cameraScanCount || 0;
+    if (!user.lastCameraScanDate || user.lastCameraScanDate.toDateString() !== today) {
+      cameraCount = 0;
     }
     
     res.json({
@@ -146,6 +161,11 @@ exports.getMe = async (req, res) => {
         count: count,
         limit: 10,
         remaining: Math.max(0, 10 - count)
+      },
+      cameraScanUsage: {
+        count: cameraCount,
+        limit: 3,
+        remaining: Math.max(0, 3 - cameraCount)
       }
     });
   } catch (error) {
