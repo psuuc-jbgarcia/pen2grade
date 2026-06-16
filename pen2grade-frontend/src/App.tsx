@@ -10,6 +10,7 @@ import AllEssaysPage from './pages/AllEssaysPage';
 import UploadEssayPage from './pages/UploadEssayPage';
 import EssayResultPage from './pages/EssayResultPage';
 import LandingPage from './pages/LandingPage';
+import SettingsPage from './pages/SettingsPage';
 import Layout from './components/Layout';
 
 const PrivateRoute = ({ children }: { children: ReactNode }) => {
@@ -30,6 +31,7 @@ function AppRoutes() {
       <Route path="/essays" element={<PrivateRoute><AllEssaysPage /></PrivateRoute>} />
       <Route path="/essays/upload" element={<PrivateRoute><UploadEssayPage /></PrivateRoute>} />
       <Route path="/essays/:id" element={<PrivateRoute><EssayResultPage /></PrivateRoute>} />
+      <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
     </Routes>
   );
 }

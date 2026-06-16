@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   BookOpen, FileText, List, LogOut, 
-  LayoutDashboard, Menu, X
+  LayoutDashboard, Menu, X, Settings
 } from 'lucide-react';
 import InstallPWA from './InstallPWA';
 
@@ -21,6 +21,7 @@ export default function Layout({ children }: LayoutProps) {
     { label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { label: 'All Essays', path: '/essays', icon: <FileText size={20} /> },
     { label: 'My Rubrics', path: '/rubrics', icon: <List size={20} /> },
+    { label: 'Settings', path: '/settings', icon: <Settings size={20} /> },
   ];
 
   const handleLogout = () => {
